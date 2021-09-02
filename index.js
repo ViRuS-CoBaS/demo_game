@@ -18,10 +18,15 @@ function drawLine(fromX, fromY, toX, toY) {
   context.closePath();
   context.stroke();
 }
+
 const map = {
   A: 20,
   X0: 100,
   Y0: 400,
+  Xots: 0,
+  Yots: 0,
+  Xm: 0, //положение мыши X
+  Ym: 0, //положение мыши Y
   drawAxis: context => {
     //Рисуем ОСИ
     // Pic.Line (X0, Y0)-(X0 + 1000, Y0 + 500), RGB(255, 0, 0)
@@ -89,12 +94,47 @@ const map = {
         drawLine(leftLineFromX, leftLineFromY, leftLineToX, leftLineToY);
       }
     }
-  },
-  mouseEvent: context => {
-    //Рисуем ромбы
   }
 };
+map.Xots = map.X0;
+map.Yots = map.Y0;
 map.drawAxis(context);
 map.drawC0(context);
 map.drawCenter(context);
-map.mouseEvent(context);
+
+window.addEventListener('click', event => {
+  var rect = canvas.getBoundingClientRect();
+  map.Xm =
+    ((event.clientX - rect.left) / (rect.right - rect.left)) * canvas.width;
+  map.Ym =
+    ((event.clientY - rect.top) / (rect.bottom - rect.top)) * canvas.height;
+  let L = map.A * (5 ^ 0.5);
+  let Xrc = map.Xots + 2 * map.A;
+  let Yrc = map.Yots;
+
+  let X1 = map.Xm;
+  let Y1 = map.Ym;
+  let X2 = Y1 - (-0.5 * X1 + map.Yots);
+  let Y2 = 0.5 * X2 + map.Yots;
+  console.log(X1, X2, Y1, Y2);
+  let RoX = (X2 - map.Xots) ^ (2 + (Y2 - map.Yots)) ^ 2 ^ 0.5;
+  let Xr = (RoX / L).toFixed(2); //'X ромба
+  console.log('rox:', RoX, Xr);
+  // 'Пересечение "мышиной" оси || X и оси OY'
+  X2 = map.Yots - (Y1 - (0.5 * X1 + map.Yots) + map.Yots);
+  Y2 = -0.5 * X2 + map.Yots;
+
+  let RoY = (X2 - map.Xots) ^ (2 + (Y2 - map.Yots)) ^ 2 ^ 0.5;
+  let Yr = RoY / L.toFixed2; //'Y ромба
+  console.log('roy:', RoY, Yr);
+  // 'Центры ромба
+  let Xrcm = Xrc + 2 * map.A * (Xr + Yr);
+  let Yrcm = Yrc + map.A * (Xr - Yr);
+
+  // 'Угол ромба
+  let Lrm = Xrcm - 2 * map.A + 1;
+  let Trm = Yrcm - map.A + 1;
+
+  drawCircle(Xrcm, Yrcm, 5);
+  console.log(map.Xm, map.Ym, Xrcm, Yrcm);
+});
